@@ -54,7 +54,7 @@ edi.setup(container => {
 
 app.get('/:id', function({ req, foo, singleton, transient, singletonFactory, transientFactory }, res, next) {
     const model = {
-        foo: foo(), // Resolve a sample component instance
+        foo: foo(), // Resolve a foo component instance
         singleton: singleton(), // Resolve a singleton component instance
         transient: transient(+req.params.id), // Resolve an instance of a transient component with id
         singletonF: singletonFactory(), // Resolve an instance of a singleton component created using a factory
