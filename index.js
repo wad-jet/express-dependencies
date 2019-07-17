@@ -1,1 +1,1 @@
-module.exports = require('./src/injection');
+module.exports = require('./src/dependencies');
