@@ -1,12 +1,8 @@
 var util = require('util');
 
 class Container {
-    constructor(/*options*/) {
-        // TODO: Get from options
-        const options = {
-            keyNameNormalization: undefined
-        };
-
+    constructor(options) {
+        if (util.isNullOrUndefined(options)) { options = { }; }
         if (util.isNullOrUndefined(options.keyNameNormalization)) {
             options.keyNameNormalization = toCamelCase;
         } else {
@@ -101,12 +97,13 @@ class Injection {
     /**
      * Register dependencies in a container 
      * @param {function} setContainer - function with container as argument
+     * @param {object} options - container options
      */
-    setup(setContainer) {
+    setup(setContainer, options) {
         if (!util.isFunction(setContainer)) {
-            throw new Error('The argument "containerSetup" not a function.');
+            throw new Error('The argument "setContainer" not a function.');
         }
-        const container = new Container();
+        const container = new Container(options);
         setContainer.call(container, container);
         this._container = container;
     }
@@ -125,8 +122,6 @@ class Injection {
             next();
         }
     }
-
-    
 }
 
 function getKeyAndConstructor(constructor) {
@@ -240,10 +235,8 @@ function argsUnion(argArray, args) {
 
 function toCamelCase(name) {
     if (!util.isString(name)) throw new Error('The argument "name" is not a string');
-    let result;
-    if (util.isNullOrUndefined(name) || name === '') {
-        result = name;
-    } else {
+    let result = undefined;
+    if (!util.isNullOrUndefined(name) && name !== '') {
         result = name.replace(/\w/, name[0].toLowerCase());
     }
     return result;
