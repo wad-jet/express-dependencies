@@ -29,7 +29,7 @@ function Transient(req, id) {
 }
 
 // You can use the class declaration instead of the function
-class Singleton() {
+class Singleton {
     constructor() {
         this.name = 'I am a singleton component';
     }
