@@ -28,8 +28,11 @@ function Transient(req, id) {
     this.name = 'I am a transient component with id ' + id;
 }
 
-function Singleton() {
-    this.name = 'I am a singleton component';
+// You can use the class declaration instead of the function
+class Singleton() {
+    constructor() {
+        this.name = 'I am a singleton component';
+    }
 }
 
 edi.setup(container => {
