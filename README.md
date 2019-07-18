@@ -1,17 +1,14 @@
-express-dependencies
-====================
+# express-dependencies
 
 Dependency Injection for Express
 
-Installation
-------------
+## Installation
 
 ```sh
 npm install --save express-dependencies
 ```
 
-Usage: register and injection components
------------
+## Usage: register and injection components
 
 ```js
 var express = require('express');
@@ -95,5 +92,17 @@ The result of a request to the local service http://localhost:3000/123
          "name":"I am a transient component with id 0"
       }
    }
+}
+```
+
+### Scoped Lifestyle
+
+For every request within a defined scope, a single instance of the component will be returned and that instance will be disposed when the scope ends.
+
+The transient and transientFactory functions have an isScoped argument (false by default if not set).
+
+```js
+edi.setup(container => {
+    container.transient(Transient, true); // enable scoped lifestyle
 }
 ```

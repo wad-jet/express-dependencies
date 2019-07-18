@@ -27,7 +27,7 @@ class Container {
      * Register a factory of component for which lifestyle is a transient
      * @param {string} key - key name for component
      * @param {function} creator - factory function to create an object
-     * @param {bool} isScoped - 
+     * @param {bool} isScoped - enable scoped lifestyle
      * @param {object} thisArg - bind context to factory function
      * @param  {...any} argArray - dynamic arguments for the factory function
      */
@@ -51,7 +51,7 @@ class Container {
     /**
      * Register a component for which lifestyle is a transient
      * @param {*} constructor - class or function to create an instance
-     * @param {bool} isScoped - 
+     * @param {bool} isScoped - enable scoped lifestyle
      * @param  {...any} argArray - static arguments for component constructor
      */
     transient(constructor, isScoped, ...argArray) { 
