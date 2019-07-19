@@ -6,6 +6,10 @@
   "scripts": {
     "test": "nyc mocha --timeout=5000"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wad-jet/express-dependencies.git"
+  },
   "keywords": [
     "di",
     "injection",
