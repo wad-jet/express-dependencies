@@ -19,7 +19,7 @@ var app = express();
 // Set middleware for injection
 app.use(edi.injector);
 
-// The first argument is request (req) or a resolvers (with or without a request), for example: Transient({ foo, singleton, req }, id) {
+// The first argument is request (req) or resolvers (with or without a request), for example: Transient({ foo, singleton, req }, id) {
 function Transient(req, id) {
     this.id = id;
     this.name = 'I am a transient component with id ' + id;
@@ -56,16 +56,16 @@ app.get('/:id', function({ req, foo, singleton, transient, singletonFactory, tra
     const model = {
         foo: foo(), // Resolve a foo component instance
         singleton: singleton(), // Resolve a singleton component instance
-        transient: transient(+req.params.id), // Resolve an instance of a transient component with id
-        singletonF: singletonFactory(), // Resolve an instance of a singleton component created using a factory
-        transientF: transientFactory() // Resolve an instance of a transient component created using a factory
+        transient: transient(+req.params.id), // Resolve an instance of transient component with id
+        singletonF: singletonFactory(), // Resolve an instance of singleton component created using a factory
+        transientF: transientFactory() // Resolve an instance of transient component created using a factory
     };
     res.json(model);
 });
 
 ```
 
-The result of a request to the local service http://localhost:3000/123
+The result of request to the local service http://localhost:3000/123
 
 ```json
 {
