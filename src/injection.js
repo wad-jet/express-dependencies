@@ -98,6 +98,7 @@ class Injection {
      * Register dependencies in a container 
      * @param {function} setContainer - function with container as argument
      * @param {object} options - container options
+     * @returns {Function} - middleware for injection
      */
     setup(setContainer, options) {
         if (!util.isFunction(setContainer)) {
@@ -106,6 +107,8 @@ class Injection {
         const container = new Container(options);
         setContainer.call(container, container);
         this._container = container;
+
+        return this.injector;
     }
 
     /**
@@ -242,4 +245,7 @@ function toCamelCase(name) {
     return result;
 }
 
-module.exports = new Injection();
+module.exports = function() {
+    const result = new Injection();
+    return result;
+}
