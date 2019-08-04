@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 var chai = require('chai');
 var expect = chai.expect;
-var di = require('../src/dependencies');
+var di = require('../src/injection');
 
 // Configure chai
 chai.should();

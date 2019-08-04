@@ -1,13 +1,8 @@
 var express = require('../../node_modules/express');
 var router = express.Router();
-var di = require('../../src/dependencies');
+var dependencies = require('../../src/injection');
+var deps = dependencies();
 var util = require('util');
-
-var app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(di.injector);
 
 const thisObj = {
     name: 'parent object'
@@ -47,13 +42,11 @@ class Component {
     }
 }
 
-function Scoped() {
-    this.factory1inc = 0;
-    this.factory2inc = 0;
-}
+var app = express();
 
-
-di.setup(container => {
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(deps.setup(container => {
     container.instance('sample', { foo: 'bar' });
 
     container.transientFactory('tFactoryNoArgsAndNoThis', function({ sample }, sarg0, sarg1, darg2) {
@@ -111,7 +104,12 @@ di.setup(container => {
         instance.factory2inc++;
         return instance;
     }, true);
-});
+}));
+
+function Scoped() {
+    this.factory1inc = 0;
+    this.factory2inc = 0;
+}
 
 // eslint-disable-next-line no-unused-vars
 app.get('/scoped', function({ req, factory1, scopedFactory2 }, res, next) {
