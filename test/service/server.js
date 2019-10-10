@@ -27,7 +27,7 @@ class User {
 }
 
 class Component {
-    constructor({ sample, req }, reg, code, darg) {        
+    constructor({ sample, req }, reg, code, darg) {
         this.reg = reg;
         // Static args
         this.created = Date.now();

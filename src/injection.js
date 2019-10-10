@@ -55,7 +55,7 @@ class Container {
      * @param  {...any} argArray - static arguments for component constructor
      */
     transient(constructor, isScoped, ...argArray) { 
-        let kc = getKeyAndConstructor(constructor);
+        let kc = getKeyAndConstructor.call(this, constructor);
         const flags = { isTransient: true, isScoped: isScoped === true };
         setDependency.call(this, kc.key, kc.constructor, flags, ...argArray);
     }
@@ -66,7 +66,7 @@ class Container {
      * @param  {...any} argArray - static arguments for component constructor
      */
     singleton(constructor, ...argArray) { 
-        let kc = getKeyAndConstructor(constructor);
+        let kc = getKeyAndConstructor.call(this, constructor);
         const flags = { isSingleton: true };
         setDependency.call(this, kc.key, kc.constructor, flags, ...argArray); 
     }
@@ -134,18 +134,20 @@ function getKeyAndConstructor(constructor) {
     } else {
         throw new Error('The argument "constructor" is not a class or function.');
     }
-    const result = { constructor: constructor, key: key.toLowerCase() };
+    const result = { constructor: constructor, key: this.options.keyNameNormalization(key) };
     return result;
 }
 
 function setDependency(key, resolve, flags, ...staticArgArray) {
     if (util.isNullOrUndefined(key)) throw new Error('Argument "key" is null or undefined');
-    if (!util.isString(key)) throw new Error('Argument "key" is not a string');
+    if (!util.isString(key)) throw new Error('Argument "key" is not a string');    
     if (util.isNullOrUndefined(resolve)) throw new Error('Argument "resolver" is null or undefined');
 
     if (this.options.keyNameNormalization) {
         key = this.options.keyNameNormalization(key);
     }
+
+    if (!key) throw new Error('Argument "key" after keyNameNormalization execute has null, undefined or empty value');
 
     const container = this;
     if (!(container instanceof Container)) throw new Error('Context is not a Container instance.');
