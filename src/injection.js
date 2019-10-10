@@ -125,6 +125,25 @@ class Injection {
             next();
         }
     }
+
+    /**
+     * Get resolver by key name
+     * @param {string} name - key name
+     */
+    getResolver(name) {
+        const resolved = { };
+        this.injector(resolved, null, () => { });
+        return resolved[name];
+    }
+
+    /**
+     * Resolve instance by key name
+     * @param {string} name - key name
+     */
+    resolve(name, ...args) {
+        const resolver = this.getResolver(name);
+        return resolver.apply(this, args);
+    }
 }
 
 function getKeyAndConstructor(constructor) {
