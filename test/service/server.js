@@ -72,7 +72,7 @@ app.use(deps.setup(container => {
         }
         instance.thisName = this.name;
         return instance;
-    }, false, thisObj, 0, 1);
+    }, thisObj, 0, 1);
 
     container.singletonFactory('sFactory', function({ req, sample }, sarg0, sarg1, darg2) {
         var instance = { name: 'singleton' };
@@ -88,22 +88,22 @@ app.use(deps.setup(container => {
         return instance;
     }, thisObj, 0, 1);
 
-    container.transient(User, false, Date.now(), 123);
+    container.transient(User, Date.now(), 123);
 
     container.singleton(Component, Date.now(), 123);
 
     // Scoped test
-    container.transient(Scoped, true);
+    container.transientScoped(Scoped);
     container.transientFactory('Factory1', ({ scoped }) => {
         const instance = scoped();
         instance.factory1inc++;
         return instance;
     });
-    container.transientFactory('ScopedFactory2', ({ scoped }) => {
+    container.transientScopedFactory('ScopedFactory2', ({ scoped }) => {
         const instance = scoped();
         instance.factory2inc++;
         return instance;
-    }, true);
+    });
 }));
 
 function Scoped() {
