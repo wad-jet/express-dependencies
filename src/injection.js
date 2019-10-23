@@ -27,13 +27,24 @@ class Container {
      * Register a factory of component for which lifestyle is a transient
      * @param {string} key - key name for component
      * @param {function} creator - factory function to create an object
-     * @param {bool} isScoped - enable scoped lifestyle
      * @param {object} thisArg - bind context to factory function
      * @param  {...any} argArray - dynamic arguments for the factory function
      */
-    transientFactory(key, creator, isScoped, thisArg, ...argArray) { 
-        const flags = { isFactory: true, isTransient: true, isScoped: isScoped === true };
-        setFactory.call(this, flags, key, creator, thisArg, ...argArray); 
+    transientFactory(key, creator, thisArg, ...argArray) { 
+        const result = transientFactory.call(this, key, creator, false, thisArg, ...argArray);
+        return result;
+    }
+
+    /**
+     * Register a factory of component for which lifestyle is a scoped transient
+     * @param {string} key - key name for component
+     * @param {function} creator - factory function to create an object
+     * @param {*} thisArg - bind context to factory function
+     * @param  {...any} argArray - dynamic arguments for the factory function
+     */
+    transientScopedFactory(key, creator, thisArg, ...argArray) {
+        const result = transientFactory.call(this, key, creator, true, thisArg, ...argArray);
+        return result;
     }
 
     /**
@@ -43,7 +54,7 @@ class Container {
      * @param {object} thisArg - bind context to factory function
      * @param  {...any} argArray - static arguments for the factory function
      */
-    singletonFactory(key, creator, thisArg, ...argArray) { 
+    singletonFactory(key, creator, thisArg, ...argArray) {
         const flags = { isFactory: true, isSingleton: true };
         setFactory.call(this, flags, key, creator, thisArg, ...argArray); 
     }
@@ -51,13 +62,21 @@ class Container {
     /**
      * Register a component for which lifestyle is a transient
      * @param {*} constructor - class or function to create an instance
-     * @param {bool} isScoped - enable scoped lifestyle
      * @param  {...any} argArray - static arguments for component constructor
      */
-    transient(constructor, isScoped, ...argArray) { 
-        let kc = getKeyAndConstructor(constructor);
-        const flags = { isTransient: true, isScoped: isScoped === true };
-        setDependency.call(this, kc.key, kc.constructor, flags, ...argArray);
+    transient(constructor, ...argArray) {
+        const result = transient.call(this, constructor, false, ...argArray);
+        return result;
+    }
+
+    /**
+     * Register a component for which lifestyle is a scoped transient
+     * @param {*} constructor - class or function to create an instance
+     * @param  {...any} argArray - static arguments for component constructor
+     */
+    transientScoped(constructor, ...argArray) {
+        const result = transient.call(this, constructor, true, ...argArray);
+        return result;
     }
 
     /**
@@ -66,7 +85,7 @@ class Container {
      * @param  {...any} argArray - static arguments for component constructor
      */
     singleton(constructor, ...argArray) { 
-        let kc = getKeyAndConstructor(constructor);
+        let kc = getKeyAndConstructor.call(this, constructor);
         const flags = { isSingleton: true };
         setDependency.call(this, kc.key, kc.constructor, flags, ...argArray); 
     }
@@ -125,6 +144,25 @@ class Injection {
             next();
         }
     }
+
+    /**
+     * Get resolver by key name
+     * @param {string} name - key name
+     */
+    getResolver(name) {
+        const resolved = { };
+        this.injector(resolved, null, () => { });
+        return resolved[name];
+    }
+
+    /**
+     * Resolve instance by key name
+     * @param {string} name - key name
+     */
+    resolve(name, ...args) {
+        const resolver = this.getResolver(name);
+        return resolver.apply(this, args);
+    }
 }
 
 function getKeyAndConstructor(constructor) {
@@ -134,18 +172,33 @@ function getKeyAndConstructor(constructor) {
     } else {
         throw new Error('The argument "constructor" is not a class or function.');
     }
-    const result = { constructor: constructor, key: key.toLowerCase() };
+    const result = { constructor: constructor, key: this.options.keyNameNormalization(key) };
     return result;
+}
+
+function transientFactory(key, creator, isScoped, thisArg, ...argArray) {
+    if (!(this instanceof Container)) { throw new Error('this not instanceof Container'); }
+    const flags = { isFactory: true, isTransient: true, isScoped: isScoped === true };
+    setFactory.call(this, flags, key, creator, thisArg, ...argArray); 
+}
+
+function transient(constructor, isScoped, ...argArray) {
+    if (!(this instanceof Container)) { throw new Error('this not instanceof Container'); }
+    let kc = getKeyAndConstructor.call(this, constructor);
+    const flags = { isTransient: true, isScoped: isScoped === true };
+    setDependency.call(this, kc.key, kc.constructor, flags, ...argArray);
 }
 
 function setDependency(key, resolve, flags, ...staticArgArray) {
     if (util.isNullOrUndefined(key)) throw new Error('Argument "key" is null or undefined');
-    if (!util.isString(key)) throw new Error('Argument "key" is not a string');
+    if (!util.isString(key)) throw new Error('Argument "key" is not a string');    
     if (util.isNullOrUndefined(resolve)) throw new Error('Argument "resolver" is null or undefined');
 
     if (this.options.keyNameNormalization) {
         key = this.options.keyNameNormalization(key);
     }
+
+    if (!key) throw new Error('Argument "key" after keyNameNormalization execute has null, undefined or empty value');
 
     const container = this;
     if (!(container instanceof Container)) throw new Error('Context is not a Container instance.');
@@ -207,7 +260,7 @@ function setDependency(key, resolve, flags, ...staticArgArray) {
 function setFactory(flags, key, create, thisArg, ...argArray) {
     if (!util.isFunction(create)) throw new Error('The argument "create" is not a function');
     if (thisArg) {
-        if (!util.isObject(thisArg)) throw new Error('The argument "argThis" is not an object');
+        if (!util.isObject(thisArg)) throw new Error('The argument "thisArg" is not an object');
         create = create.bind(thisArg);
     }        
     setDependency.call(this, key, create, flags, ...argArray);

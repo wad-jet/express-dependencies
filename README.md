@@ -97,10 +97,32 @@ The result of request to the local service http://localhost:3000/123
 
 For every request within a defined scope, a single instance of the component will be returned and that instance will be disposed when the scope ends.
 
-The transient and transientFactory functions have an isScoped argument (false by default if not set).
+You can declare such dependencies using the *transientScoped* and *transientScopedFactory* functions.
 
 ```js
 app.use(deps.setup(container => {
-    container.transient(Transient, true); // enable scoped lifestyle
+    container.transientScoped(Transient); // enable scoped lifestyle
 }));
 ```
+
+> In version <= 1.0.4, lifestyle scoped is enabled using the isScoped argument in the transient and transientFactory functions.
+> The argument isScoped is not supported in versions >= 1.0.4.
+
+### Resolve instances without injection
+
+If you need to get an instance without injections, you can use the Resolve function. The Resolve function accepts the name of the instance as argument, as well as a possible set of additional arguments to the instance constructor.
+
+```js
+var deps = require('express-dependencies')();
+const resolver = deps.getResolver('sample');
+const sampleInstance = resolver();
+```
+
+or
+
+```js
+var deps = require('express-dependencies')();
+const sampleInstance = deps.resolve('sample');
+```
+
+The **deps** can be used as a service locator.
