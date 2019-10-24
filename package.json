@@ -1,26 +1,32 @@
 {
   "name": "express-dependencies",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Dependency Injection for Express",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha --timeout=5000"
+    "test": "nyc mocha --timeout=5000",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wad-jet/express-dependencies.git"
   },
   "keywords": [
+    "node",
+    "container",
     "di",
     "injection",
     "dependency",
-    "ioc"
+    "ioc",
+    "dependency injection",
+    "service locator"
   ],
   "author": "Demidov Oleg V.",
   "license": "MIT",
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "coveralls": "^3.0.7",
     "eslint": "^6.0.1",
     "express": "^4.17.1",
     "mocha": "^6.1.4",

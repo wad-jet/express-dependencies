@@ -31,8 +31,7 @@ class Container {
      * @param  {...any} argArray - dynamic arguments for the factory function
      */
     transientFactory(key, creator, thisArg, ...argArray) { 
-        const result = transientFactory.call(this, key, creator, false, thisArg, ...argArray);
-        return result;
+        transientFactory.call(this, key, creator, false, thisArg, ...argArray);
     }
 
     /**
@@ -43,8 +42,7 @@ class Container {
      * @param  {...any} argArray - dynamic arguments for the factory function
      */
     transientScopedFactory(key, creator, thisArg, ...argArray) {
-        const result = transientFactory.call(this, key, creator, true, thisArg, ...argArray);
-        return result;
+        transientFactory.call(this, key, creator, true, thisArg, ...argArray);        
     }
 
     /**
@@ -65,8 +63,7 @@ class Container {
      * @param  {...any} argArray - static arguments for component constructor
      */
     transient(constructor, ...argArray) {
-        const result = transient.call(this, constructor, false, ...argArray);
-        return result;
+        transient.call(this, constructor, false, ...argArray);
     }
 
     /**
@@ -75,8 +72,7 @@ class Container {
      * @param  {...any} argArray - static arguments for component constructor
      */
     transientScoped(constructor, ...argArray) {
-        const result = transient.call(this, constructor, true, ...argArray);
-        return result;
+        transient.call(this, constructor, true, ...argArray);
     }
 
     /**
@@ -115,9 +111,9 @@ class Injection {
 
     /**
      * Register dependencies in a container 
-     * @param {function} setContainer - function with container as argument
+     * @param {function(Container)} setContainer - function with container as argument
      * @param {object} options - container options
-     * @returns {Function} - middleware for injection
+     * @returns {function} - middleware for injection
      */
     setup(setContainer, options) {
         if (!util.isFunction(setContainer)) {
@@ -132,6 +128,7 @@ class Injection {
 
     /**
      * Get middleware for injection
+     * @returns {function}
      */
     get injector() {
         const injection = this;
@@ -148,6 +145,7 @@ class Injection {
     /**
      * Get resolver by key name
      * @param {string} name - key name
+     * @return {function} - resolver function
      */
     getResolver(name) {
         const resolved = { };
@@ -158,6 +156,7 @@ class Injection {
     /**
      * Resolve instance by key name
      * @param {string} name - key name
+     * @returns {Object} - resolved instance
      */
     resolve(name, ...args) {
         const resolver = this.getResolver(name);

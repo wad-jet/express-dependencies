@@ -2,6 +2,10 @@
 
 Dependency Injection for Express
 
+[![NPM Version][npm-image]][npm-url]
+[![Linux Build][travis-image]][travis-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
+
 ## Installation
 
 ```sh
@@ -126,3 +130,12 @@ const sampleInstance = deps.resolve('sample');
 ```
 
 The **deps** can be used as a service locator.
+
+I will be glad to your wishes, suggestions and comments. Please, write to <express.di@wad-jet.ru>.
+
+[npm-image]: https://img.shields.io/npm/v/express-dependencies.svg
+[npm-url]: https://npmjs.org/package/express-dependencies
+[travis-image]: https://img.shields.io/travis/wad-jet/express-dependencies/master.svg?label=linux
+[travis-url]: https://travis-ci.org/wad-jet/express-dependencies
+[coveralls-image]: https://img.shields.io/coveralls/wad-jet/express-dependencies/master.svg
+[coveralls-url]: https://coveralls.io/r/wad-jet/express-dependencies?branch=master
