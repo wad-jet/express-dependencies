@@ -12,10 +12,14 @@
     "url": "git+https://github.com/wad-jet/express-dependencies.git"
   },
   "keywords": [
+    "node",
+    "container",
     "di",
     "injection",
     "dependency",
-    "ioc"
+    "ioc",
+    "dependency injection",
+    "service locator"
   ],
   "author": "Demidov Oleg V.",
   "license": "MIT",
