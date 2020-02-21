@@ -155,7 +155,7 @@ class Injection {
         }
 
         let modules = false;
-        if (options.modules) {
+        if (options && options.modules) {
             modules = options.modules;
             delete options.modules;
         }
