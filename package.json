@@ -1,6 +1,6 @@
 {
   "name": "express-dependencies",
-  "version": "1.2.2-beta.0",
+  "version": "1.2.2-beta.1",
   "description": "Dependency Injection for Express",
   "main": "index.js",
   "scripts": {
@@ -12,14 +12,12 @@
     "url": "git+https://github.com/wad-jet/express-dependencies.git"
   },
   "keywords": [
-    "node",
-    "container",
-    "di",
-    "injection",
+    "DI",
     "dependency",
-    "ioc",
+    "injection",
     "dependency injection",
-    "service locator"
+    "express",
+    "injector"
   ],
   "author": "Demidov Oleg V.",
   "license": "MIT",
