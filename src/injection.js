@@ -165,32 +165,21 @@ class Injection {
         if (modules && util.isArray(modules)) {
             let moduleSetupOptions = options.modulesOptions || { };
             for (let _module of modules) {
-                let _moduleName;
-                let moduleSetupFunction = undefined;
-                if (util.isObject(_module)) {
-                    const ctor = _module.ctor || _module.constructor;
-                    if (!ctor) { 
-                        throw new Error('ctor or constructor option value is undefined'); 
-                    }
-                    moduleSetupFunction = ctor.setup;
-                    if (_module.options) {
-                        moduleSetupOptions = Object.assign({ }, moduleSetupOptions, _module.options);
-                    }
-                    _moduleName = ctor.name;
-                } else {
-                    moduleSetupFunction = _module.setup;
-                    _moduleName = _module.name;
-                }
-                if (!_moduleName) {
-                    throw new Error('Invalid module');
+                const moduleSetupFunction = _module.setup;
+                if (_module.options) {
+                    moduleSetupOptions = Object.assign({ }, moduleSetupOptions, _module.options);
                 }
                 if (moduleSetupFunction) {
                     if (!util.isFunction(moduleSetupFunction)) {
-                        throw new Error('ctor or constructor option value is not a function'); 
+                        throw new Error('The setup option value is not a function'); 
                     }
-                    moduleSetupFunction.call(container, container, moduleSetupOptions)
+                    moduleSetupFunction.call(container, container, moduleSetupOptions);
                 } else {
-                    throw new Error(`The module ${_moduleName} does not have static setup function.`);
+                    if (util.isObject(_module)) {
+                        throw new Error(`The module configuration object does not have setup function.`);
+                    } else {
+                        throw new Error(`The module does not have static setup function.`);
+                    }
                 }
             }
         }
