@@ -3,6 +3,7 @@ var chai = require('chai');
 var chaiHttp = require('chai-http');
 var expect = chai.expect;
 var app = require('./service/server');
+var deps = require('../src/injection');
 
 // Configure chai
 chai.use(chaiHttp);
@@ -61,5 +62,49 @@ describe('Test object registered as a singleton.', function() {
                             });
                     });
             });
+    });
+
+    describe("Registering and resolving an instance", function() {
+        it('The singleton function test', function() {
+            const injection = deps();
+            const ClassConstructor = function() { this.foo = 'bar'; };
+            injection.setup(container => {
+                container.singleton(ClassConstructor);
+            });
+
+            const resolver = injection.getResolver('classConstructor');
+            const instance1 = resolver();
+            const instance2 = resolver();
+
+            expect(instance1).to.be.an('object'); expect(instance1).to.include({ foo: 'bar' });
+            expect(instance2).to.be.an('object'); expect(instance2).to.include({ foo: 'bar' });
+            expect(instance1).to.eq(instance2);
+        });
+    });
+
+    describe("Registering and resolving an instance with using of a named resolver", function() {
+        it('The singletonNamed function test', function() {
+            const injection = deps();
+            const ClassConstructor = function() { this.foo = 'bar'; };
+            injection.setup(container => {
+                container.singletonNamed('MyName', ClassConstructor);
+            });
+
+            const resolver = injection.getResolver('myName');
+            const instance1 = resolver();
+            const instance2 = resolver();
+
+            expect(instance1).to.be.an('object'); expect(instance1).to.include({ foo: 'bar' });
+            expect(instance2).to.be.an('object'); expect(instance2).to.include({ foo: 'bar' });
+            expect(instance1).to.eq(instance2);
+        });
+
+        it('Invalid resolverName argument', function() {
+            const injection = deps();
+            const ClassConstructor = function() { this.foo = 'bar'; };
+            injection.setup(container => {
+                expect(() => { container.singletonNamed(undefined, ClassConstructor); }).to.throw('Invalid resolverName argument');
+            });
+        });
     });
 });

@@ -85,6 +85,40 @@ class Container {
         const flags = { isSingleton: true };
         setDependency.call(this, kc.key, kc.constructor, flags, ...argArray); 
     }
+
+    /**
+     * Register a component for which lifestyle is a singleton with custom resolver name
+     * @param {String} resolverName 
+     * @param {*} constructor 
+     * @param {...any} argArray 
+     */
+    singletonNamed(resolverName, constructor, ...argArray) {
+        if (!resolverName || !util.isString(resolverName)) {
+            throw new Error('Invalid resolverName argument');
+        }
+        let kc = getKeyAndConstructor.call(this, constructor);
+        const flags = { isSingleton: true };
+        setDependency.call(this, resolverName, kc.constructor, flags, ...argArray); 
+    }
+
+    /**
+     * Register a component for which lifestyle is a transient with custom resolver name
+     * @param {String} resolverName 
+     * @param {*} constructor 
+     * @param {...any} argArray 
+     */
+    transientNamed(resolverName, constructor, ...argArray) {
+        transientNamed.call(this, resolverName, constructor, false, ...argArray);
+    }
+
+    /**
+     * Register a component for which lifestyle is a scoped transient with custom resolver name
+     * @param {*} constructor - class or function to create an instance
+     * @param  {...any} argArray - static arguments for component constructor
+     */
+    transientScopedNamed(resolverName, constructor, ...argArray) {
+        transientNamed.call(this, resolverName, constructor, true, ...argArray);
+    }
 }
 
 function mixResolversTo(owner, force = false) {
@@ -117,9 +151,39 @@ class Injection {
      */
     setup(setContainer, options) {
         if (!util.isFunction(setContainer)) {
-            throw new Error('The argument "setContainer" not a function.');
+            throw new Error('The argument "setContainer" is not a function.');
         }
+
+        let modules = false;
+        if (options && options.modules) {
+            modules = options.modules;
+            delete options.modules;
+        }
+
         const container = new Container(options);
+
+        if (modules && util.isArray(modules)) {
+            let moduleSetupOptions = options.modulesOptions || { };
+            for (let _module of modules) {
+                const moduleSetupFunction = _module.setup;
+                if (_module.options) {
+                    moduleSetupOptions = Object.assign({ }, moduleSetupOptions, _module.options);
+                }
+                if (moduleSetupFunction) {
+                    if (!util.isFunction(moduleSetupFunction)) {
+                        throw new Error('The setup option value is not a function'); 
+                    }
+                    moduleSetupFunction.call(container, container, moduleSetupOptions);
+                } else {
+                    if (util.isObject(_module)) {
+                        throw new Error(`The module configuration object does not have setup function.`);
+                    } else {
+                        throw new Error(`The module does not have static setup function.`);
+                    }
+                }
+            }
+        }
+
         setContainer.call(container, container);
         this._container = container;
 
@@ -188,9 +252,19 @@ function transient(constructor, isScoped, ...argArray) {
     setDependency.call(this, kc.key, kc.constructor, flags, ...argArray);
 }
 
+function transientNamed(resolverName, constructor, isScoped, ...argArray) {
+    if (!resolverName || !util.isString(resolverName)) {
+        throw new Error('Invalid resolverName argument');
+    }
+    if (!(this instanceof Container)) { throw new Error('this not instanceof Container'); }
+    let kc = getKeyAndConstructor.call(this, constructor);
+    const flags = { isTransient: true, isScoped: isScoped === true };
+    setDependency.call(this, resolverName, kc.constructor, flags, ...argArray);
+}
+
 function setDependency(key, resolve, flags, ...staticArgArray) {
     if (util.isNullOrUndefined(key)) throw new Error('Argument "key" is null or undefined');
-    if (!util.isString(key)) throw new Error('Argument "key" is not a string');    
+    if (!util.isString(key)) throw new Error('Argument "key" is not a string');
     if (util.isNullOrUndefined(resolve)) throw new Error('Argument "resolver" is null or undefined');
 
     if (this.options.keyNameNormalization) {
@@ -227,7 +301,7 @@ function setDependency(key, resolve, flags, ...staticArgArray) {
                 return {
                     get: function(owner, args) {
                         const scoped = (isScoped ? { owner, keyForScope: key } : { owner, keyForScope: null });
-                        if (_singletonInstance === null) {                            
+                        if (_singletonInstance === null) {
                             _singletonInstance = createInstance(resolve, isFactory, scoped, args);
                         }
                         return _singletonInstance;
