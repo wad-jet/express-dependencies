@@ -112,7 +112,7 @@ describe('Setup modules test', function() {
                 expect(container).to.have.own.property('_dependencies');
                 expect(options).to.be.an('object');
                 expect(options).to.include({ option2: 2 });
-                expect(options).to.not.include({ option1: 1 });
+                expect(options).to.include({ option1: 1 });
             };
             injection.setup(() => { }, { option1: 1, modulesOptions: { option2: 2 }, modules: [ ClassConstructor ] });
         });

@@ -163,7 +163,9 @@ class Injection {
         const container = new Container(options);
 
         if (modules && util.isArray(modules)) {
-            let moduleSetupOptions = options.modulesOptions || { };
+            let moduleSetupOptions = Object.assign({}, options, options.modulesOptions || { });
+            delete options.modulesOptions;
+
             for (let _module of modules) {
                 const moduleSetupFunction = _module.setup;
                 if (_module.options) {
