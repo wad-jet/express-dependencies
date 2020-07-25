@@ -293,6 +293,8 @@ function setDependency(key, resolve, flags, ...staticArgArray) {
         if (!util.isFunction(resolve)) throw new Error('The "resolver" argument not a function.');
     }
 
+    if (isSingleton && isScoped) throw new Error('Singleton object cannot have a scoped lifestyle');
+
     let resolveFunction;
     if (isInstance) {
         resolveFunction = function(/*owner*/) { return () => resolve; };
@@ -302,9 +304,8 @@ function setDependency(key, resolve, flags, ...staticArgArray) {
                 var _singletonInstance = null;
                 return {
                     get: function(owner, args) {
-                        const scoped = (isScoped ? { owner, keyForScope: key } : { owner, keyForScope: null });
                         if (_singletonInstance === null) {
-                            _singletonInstance = createInstance(resolve, isFactory, scoped, args);
+                            _singletonInstance = createInstance(resolve, isFactory, { owner, keyForScope: null }, args);
                         }
                         return _singletonInstance;
                     }
