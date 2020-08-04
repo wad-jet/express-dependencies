@@ -2,7 +2,6 @@
 var chai = require('chai');
 var expect = chai.expect;
 var di = require('../src/injection')();
-var util = require('util');
 
 // Configure chai
 chai.should();
@@ -27,7 +26,7 @@ describe('Setup tests', function() {
         });
 
         it('keyNameNormalization option is undefined, used to camel case converter by default', function() {
-            expect(() => di.setup(c => { c.transient('not a function') })).to.throw('not a class or function');
+            expect(() => di.setup(c => { c.transient({ constructor: 'not a function', tags: [ ] }) })).to.throw('not a class or function');
         });
 
         it('keyNameNormalization should support camel case logic for naming by default', function() {

@@ -47,6 +47,11 @@ var app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(deps.setup(container => {
+
+    container.instance({ key: 'taggedInstance', tag: 'one' }, { foo: 'bar one' });
+    container.instance({ key: 'taggedInstance', tags: [ 'two', 'any' ] }, { foo: 'bar two or any' });
+    container.instance({ key: 'taggedInstance', tags: [ 'three', 'any' ] }, { foo: 'bar three or any' });
+
     container.instance('sample', { foo: 'bar' });
 
     container.transientFactory('tFactoryNoArgsAndNoThis', function({ sample }, sarg0, sarg1, darg2) {
@@ -59,6 +64,34 @@ app.use(deps.setup(container => {
         instance.thisName = this.name;
         return instance;
     });
+
+
+    container.transientFactory({ key: 'tFactoryTagged', tag: 'one' }, function({ sample }, sarg0, darg0, darg1) {
+        var instance = { name: 'transient, tagged, one' };
+        instance.sample = sample();
+        instance.sarg0 = sarg0;
+        instance.darg0 = darg0;
+        instance.darg1 = darg1;
+        return instance;
+    }, thisObj, 'static');
+
+    container.transientFactory({ key: 'tFactoryTagged', tags: [ 'two', 'any' ] }, function({ sample }, sarg0, darg0, darg1) {
+        var instance = { name: 'transient, tagged, two or any' };
+        instance.sample = sample();
+        instance.sarg0 = sarg0;
+        instance.darg0 = darg0;
+        instance.darg1 = darg1;
+        return instance;
+    }, thisObj, 'static');
+
+    container.transientFactory({ key: 'tFactoryTagged', tags: [ 'three', 'any' ] }, function({ sample }, sarg0, darg0, darg1) {
+        var instance = { name: 'transient, tagged, three or any' };
+        instance.sample = sample();
+        instance.sarg0 = sarg0;
+        instance.darg0 = darg0;
+        instance.darg1 = darg1;
+        return instance;
+    }, thisObj, 'static');
 
     container.transientFactory('tFactory', function({ req, sample }, sarg0, sarg1, darg2) {
         var instance = { name: 'transient' };
@@ -126,10 +159,40 @@ app.get('/scoped', function({ req, factory1, scopedFactory2 }, res, next) {
 });
 
 // eslint-disable-next-line no-unused-vars
+app.get('/instance/tagged', function({ req, taggedInstance }, res, next) {
+    var resolvers = taggedInstance();
+    const result = resolvers.map(r => r());
+    res.json(result);
+});
+
+// eslint-disable-next-line no-unused-vars
+app.get('/instance/tagged/:tag', function({ req, taggedInstance }, res, next) {
+    var resolvers = taggedInstance(req.params.tag);
+    const result = resolvers.map(r => r());
+    res.json(result);
+});
+
+
+// eslint-disable-next-line no-unused-vars
 app.get('/instance/:field', function({ req, sample }, res, next) {
     var instance = sample();
     instance[req.params.field] = req.params.field;
     res.json(instance);
+});
+
+
+// eslint-disable-next-line no-unused-vars
+app.get('/transient/tagged', function({ req, tFactoryTagged }, res, next) {
+    var resolvers = tFactoryTagged(null);
+    const result = resolvers.map(r => r(1, 2));
+    res.json(result);
+});
+
+// eslint-disable-next-line no-unused-vars
+app.get('/transient/tagged/:tag', function({ req, tFactoryTagged }, res, next) {
+    var resolvers = tFactoryTagged(req.params.tag);
+    const result = resolvers.map(r => r(1, 2));
+    res.json(result);
 });
 
 // eslint-disable-next-line no-unused-vars
