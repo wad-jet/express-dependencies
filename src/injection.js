@@ -15,109 +15,119 @@ class Container {
 
     /**
      * Register a component for which lifestyle is an instance
-     * @param {*} key - key name for component
-     * @param {*} instance - object instance or primitive value
+     * @param {string | { key: string, tags: string[]}} key - key name for component (can also be tagged)
+     * @param {object} instance - object instance or primitive value
      */
-    instance(key, instance) { 
+    instance(key, instance) {
+        const pk = parseKey(key);
         const flags = { isInstance: true };
-        setDependency.call(this, key, instance, flags); 
+        setDependency.call(this, pk.key, instance, pk.tags, flags); 
     }
 
     /**
      * Register a factory of component for which lifestyle is a transient
-     * @param {string} key - key name for component
+     * @param {string | { key: string, tags: string[]}} key - key name for component (can also be tagged)
      * @param {function} creator - factory function to create an object
      * @param {object} thisArg - bind context to factory function
      * @param  {...any} argArray - dynamic arguments for the factory function
      */
-    transientFactory(key, creator, thisArg, ...argArray) { 
-        transientFactory.call(this, key, creator, false, thisArg, ...argArray);
+    transientFactory(key, creator, thisArg, ...argArray) {
+        const pk = parseKey(key);
+        transientFactory.call(this, pk.key, creator, pk.tags, false, thisArg, ...argArray);
     }
 
     /**
      * Register a factory of component for which lifestyle is a scoped transient
-     * @param {string} key - key name for component
+     * @param {string | { key: string, tags: string[]}} key - key name for component (can also be tagged)
      * @param {function} creator - factory function to create an object
-     * @param {*} thisArg - bind context to factory function
+     * @param {object} thisArg - bind context to factory function
      * @param  {...any} argArray - dynamic arguments for the factory function
      */
     transientScopedFactory(key, creator, thisArg, ...argArray) {
-        transientFactory.call(this, key, creator, true, thisArg, ...argArray);        
+        const pk = parseKey(key);
+        transientFactory.call(this, pk.key, creator, pk.tags, true, thisArg, ...argArray);        
     }
 
     /**
      * Register a factory of component for which lifestyle is a singleton
-     * @param {string} key - key name for component
+     * @param {string | { key: string, tags: string[]}} key - key name for component (can also be tagged)
      * @param {function} creator - factory function to create an object
      * @param {object} thisArg - bind context to factory function
      * @param  {...any} argArray - static arguments for the factory function
      */
     singletonFactory(key, creator, thisArg, ...argArray) {
+        const pk = parseKey(key);
         const flags = { isFactory: true, isSingleton: true };
-        setFactory.call(this, flags, key, creator, thisArg, ...argArray); 
+        setFactory.call(this, flags, pk.key, creator, pk.tags, thisArg, ...argArray); 
     }
 
     /**
      * Register a component for which lifestyle is a transient
-     * @param {*} constructor - class or function to create an instance
+     * @param {function | { constructor: function, tags: string[] } | { ctr: function, tags: string[] }} constructor - class or function to create an instance (can also be tagged)
      * @param  {...any} argArray - static arguments for component constructor
      */
     transient(constructor, ...argArray) {
-        transient.call(this, constructor, false, ...argArray);
+        const pc = parseConstructor(constructor);
+        transient.call(this, pc.constructor, pc.tags, false, ...argArray);
     }
 
     /**
      * Register a component for which lifestyle is a scoped transient
-     * @param {*} constructor - class or function to create an instance
+     * @param {function | { constructor: function, tags: string[] } | { ctr: function, tags: string[] }} constructor - class or function to create an instance (can also be tagged)
      * @param  {...any} argArray - static arguments for component constructor
      */
     transientScoped(constructor, ...argArray) {
-        transient.call(this, constructor, true, ...argArray);
+        const pc = parseConstructor(constructor);
+        transient.call(this, pc.constructor, pc.tags, true, ...argArray);
     }
 
     /**
      * Register a component for which lifestyle is a singleton
-     * @param {*} constructor - class or function to create an instance
+     * @param {function | { constructor: function, tags: string[] } | { ctr: function, tags: string[] }} constructor - class or function to create an instance (can also be tagged)
      * @param  {...any} argArray - static arguments for component constructor
      */
-    singleton(constructor, ...argArray) { 
-        let kc = getKeyAndConstructor.call(this, constructor);
+    singleton(constructor, ...argArray) {
+        const pc = parseConstructor(constructor);
+        const kc = getKeyAndConstructor.call(this, pc.constructor);
         const flags = { isSingleton: true };
-        setDependency.call(this, kc.key, kc.constructor, flags, ...argArray); 
+        setDependency.call(this, kc.key, kc.constructor, pc.tags, flags, ...argArray); 
     }
 
     /**
      * Register a component for which lifestyle is a singleton with custom resolver name
      * @param {String} resolverName 
-     * @param {*} constructor 
+     * @param {function | { constructor: function, tags: string[] } | { ctr: function, tags: string[] }} constructor - class or function to create an instance (can also be tagged)
      * @param {...any} argArray 
      */
     singletonNamed(resolverName, constructor, ...argArray) {
         if (!resolverName || !util.isString(resolverName)) {
             throw new Error('Invalid resolverName argument');
         }
-        let kc = getKeyAndConstructor.call(this, constructor);
+        const pc = parseConstructor(constructor);
+        let kc = getKeyAndConstructor.call(this, pc.constructor);
         const flags = { isSingleton: true };
-        setDependency.call(this, resolverName, kc.constructor, flags, ...argArray); 
+        setDependency.call(this, resolverName, kc.constructor, pc.tags, flags, ...argArray); 
     }
 
     /**
      * Register a component for which lifestyle is a transient with custom resolver name
      * @param {String} resolverName 
-     * @param {*} constructor 
+     * @param {function | { constructor: function, tags: string[] } | { ctr: function, tags: string[] }} constructor - class or function to create an instance (can also be tagged)
      * @param {...any} argArray 
      */
     transientNamed(resolverName, constructor, ...argArray) {
-        transientNamed.call(this, resolverName, constructor, false, ...argArray);
+        const pc = parseConstructor(constructor);
+        transientNamed.call(this, resolverName, pc.constructor, pc.tags, false, ...argArray);
     }
 
     /**
      * Register a component for which lifestyle is a scoped transient with custom resolver name
-     * @param {*} constructor - class or function to create an instance
+     * @param {function | { constructor: function, tags: string[] } | { ctr: function, tags: string[] }} constructor - class or function to create an instance (can also be tagged)
      * @param  {...any} argArray - static arguments for component constructor
      */
     transientScopedNamed(resolverName, constructor, ...argArray) {
-        transientNamed.call(this, resolverName, constructor, true, ...argArray);
+        const pc = parseConstructor(constructor);
+        transientNamed.call(this, resolverName, pc.constructor, pc.tags, true, ...argArray);
     }
 }
 
@@ -131,9 +141,35 @@ function mixResolversTo(owner, force = false) {
         const key = keys[i];
         if (!force && owner[key] !== undefined) throw new Error(`The property '${key}' has to request.`);
         
-        const dependency = this._dependencies[key];
+        let dependency = this._dependencies[key];
         if (util.isNullOrUndefined(dependency)) throw new Error(`Dependency by key ${key} not registered.`);
-        const resolver = dependency.resolver(owner);
+
+        let resolver;
+        if (util.isArray(dependency)) {
+            resolver = (tags) => {
+                if (util.isNullOrUndefined(tags)) {
+                    tags = false;
+                } 
+                else if (!util.isArray(tags)) {
+                    if (!util.isString(tags) || tags.trim().length === 0) {
+                        throw new Error('Invalid tag value');
+                    }
+                    tags = [ tags ];
+                }
+
+                if (tags !== false) {
+                    dependency = dependency.filter(dep => (dep.tags || []).filter(x => tags.includes(x)).length > 0);
+                }
+                const result = dependency.map(dep => {
+                    return dep.resolver(owner);
+                });
+                return result;
+            };
+        } 
+        else {
+            resolver = dependency.resolver(owner);
+        }
+
         owner[key] = resolver;
     }
 }
@@ -230,6 +266,33 @@ class Injection {
     }
 }
 
+function parseKey(key) {
+    if (util.isString(key)) {
+        return { key, tags: [ ] };
+    }
+    if (util.isObject(key) && util.isString(key.key)) {
+        const tags = key.tags || key.tag && [ key.tag ];
+        if (util.isArray(tags)) {
+            return { key: key.key, tags };
+        }
+    }
+    throw new Error('Invalid key value: ' + JSON.stringify(key));
+}
+
+function parseConstructor(constructor) {
+    if (util.isFunction(constructor)) {
+        return { constructor, tags: [ ] };
+    }
+    if (util.isObject(constructor)) {
+        const ctr = Object.prototype.hasOwnProperty.call(constructor, 'constructor') ? constructor.constructor : constructor.ctr;
+        const tags = constructor.tags || constructor.tag && [ constructor.tag ];
+        if (ctr && util.isArray(tags)) {        
+            return { constructor: ctr, tags };
+        }
+    }
+    throw new Error('Invalid constructor value: ' + JSON.stringify(constructor));
+}
+ 
 function getKeyAndConstructor(constructor) {
     let key;
     if (util.isFunction(constructor)) {
@@ -241,30 +304,30 @@ function getKeyAndConstructor(constructor) {
     return result;
 }
 
-function transientFactory(key, creator, isScoped, thisArg, ...argArray) {
+function transientFactory(key, creator, tags, isScoped, thisArg, ...argArray) {
     if (!(this instanceof Container)) { throw new Error('this not instanceof Container'); }
     const flags = { isFactory: true, isTransient: true, isScoped: isScoped === true };
-    setFactory.call(this, flags, key, creator, thisArg, ...argArray); 
+    setFactory.call(this, flags, key, creator, tags, thisArg, ...argArray); 
 }
 
-function transient(constructor, isScoped, ...argArray) {
+function transient(constructor, tags, isScoped, ...argArray) {
     if (!(this instanceof Container)) { throw new Error('this not instanceof Container'); }
     let kc = getKeyAndConstructor.call(this, constructor);
     const flags = { isTransient: true, isScoped: isScoped === true };
-    setDependency.call(this, kc.key, kc.constructor, flags, ...argArray);
+    setDependency.call(this, kc.key, kc.constructor, tags, flags, ...argArray);
 }
 
-function transientNamed(resolverName, constructor, isScoped, ...argArray) {
+function transientNamed(resolverName, constructor, tags, isScoped, ...argArray) {
     if (!resolverName || !util.isString(resolverName)) {
         throw new Error('Invalid resolverName argument');
     }
     if (!(this instanceof Container)) { throw new Error('this not instanceof Container'); }
     let kc = getKeyAndConstructor.call(this, constructor);
     const flags = { isTransient: true, isScoped: isScoped === true };
-    setDependency.call(this, resolverName, kc.constructor, flags, ...argArray);
+    setDependency.call(this, resolverName, kc.constructor, tags, flags, ...argArray);
 }
 
-function setDependency(key, resolve, flags, ...staticArgArray) {
+function setDependency(key, resolve, tags, flags, ...staticArgArray) {
     if (util.isNullOrUndefined(key)) throw new Error('Argument "key" is null or undefined');
     if (!util.isString(key)) throw new Error('Argument "key" is not a string');
     if (util.isNullOrUndefined(resolve)) throw new Error('Argument "resolver" is null or undefined');
@@ -329,16 +392,32 @@ function setDependency(key, resolve, flags, ...staticArgArray) {
         }
     }
 
-    this._dependencies[key] = { resolver: resolveFunction };
+    let newResolver = { resolver: resolveFunction };
+    if (tags && tags[0]) {
+        newResolver.tags = tags;
+    }
+
+    let dependency = this._dependencies[key];
+    if (dependency) {
+        if (!util.isArray(dependency)) {
+            dependency.tags = dependency.tags || [ ];
+            dependency = [ dependency ];
+            this._dependencies[key] = dependency;
+        }
+        dependency.push(newResolver);
+    }
+    else {
+        this._dependencies[key] = newResolver;
+    }
 }
 
-function setFactory(flags, key, create, thisArg, ...argArray) {
+function setFactory(flags, key, create, tags, thisArg, ...argArray) {
     if (!util.isFunction(create)) throw new Error('The argument "create" is not a function');
     if (thisArg) {
         if (!util.isObject(thisArg)) throw new Error('The argument "thisArg" is not an object');
         create = create.bind(thisArg);
     }        
-    setDependency.call(this, key, create, flags, ...argArray);
+    setDependency.call(this, key, create, tags, flags, ...argArray);
 }
 
 function createInstance(resolve, isFactory, { owner, keyForScope }, argArray) {

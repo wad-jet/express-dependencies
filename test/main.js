@@ -20,7 +20,7 @@ describe('Main tests', function() {
         });
 
         it('keyNameNormalization option is undefined, used to camel case converter by default', function() {
-            expect(() => di.setup(c => { c.transient('not a function') })).to.throw('not a class or function');
+            expect(() => di.setup(c => { c.transient({ ctr: 'not a function', tags: [] }) })).to.throw('not a class or function');
         });
 
         it('keyNameNormalization should support camel case logic for naming by default', function() {
