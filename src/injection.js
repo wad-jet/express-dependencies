@@ -141,12 +141,14 @@ function mixResolversTo(owner, force = false) {
         const key = keys[i];
         if (!force && owner[key] !== undefined) throw new Error(`The property '${key}' has to request.`);
         
-        let dependency = this._dependencies[key];
+        const dependency = this._dependencies[key];
         if (util.isNullOrUndefined(dependency)) throw new Error(`Dependency by key ${key} not registered.`);
 
         let resolver;
         if (util.isArray(dependency)) {
-            resolver = (tags) => {
+            resolver = function (tags) {
+                let dependency = this;
+
                 if (util.isNullOrUndefined(tags)) {
                     tags = false;
                 } 
@@ -164,7 +166,8 @@ function mixResolversTo(owner, force = false) {
                     return dep.resolver(owner);
                 });
                 return result;
-            };
+            }
+            .bind(dependency);
         } 
         else {
             resolver = dependency.resolver(owner);
