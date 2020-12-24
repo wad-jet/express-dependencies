@@ -410,6 +410,10 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
         dependency.push(newResolver);
     }
     else {
+        // TODO: registration of a single dependency with tags, need to implement a unit test
+        if (!util.isArray(newResolver) && Array.isArray(newResolver.tags)) {
+            newResolver = [ newResolver ];
+        }
         this._dependencies[key] = newResolver;
     }
 }
