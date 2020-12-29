@@ -11,6 +11,28 @@ class Container {
 
         this.options = options;
         this._dependencies = { };
+        this._statistics = {
+            registered: {
+                instances: 0,
+                singletons: 0,
+                total: 0,
+                keys: { }
+            }
+        };
+        this._flushStatistics();
+    }
+
+    _flushStatistics() {
+        this._statistics.created = {
+            singletons: 0,
+            total: 0,
+            keys: { }
+        };
+        this._statistics.misses = {
+            singletons: 0,
+            total: 0,
+            keys: { }
+        };
     }
 
     /**
@@ -180,6 +202,15 @@ function mixResolversTo(owner, force = false) {
 class Injection {
     constructor() {
         this._container = null;
+    }
+
+    getStatistics() {
+        const result = Object.assign({ time: new Date() }, this._container._statistics);
+        return result;
+    }
+
+    flushStatistics() {
+        this._container._flushStatistics();
     }
 
     /**
@@ -359,6 +390,8 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
         if (!util.isFunction(resolve)) throw new Error('The "resolver" argument not a function.');
     }
 
+    const statistics = this._statistics;
+
     let resolveFunction;
     if (isInstance) {
         resolveFunction = function(/*owner*/) { return () => resolve; };
@@ -370,7 +403,11 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
                     get: function(owner, args) {
                         const scoped = (isScoped ? { owner, keyForScope: key } : { owner, keyForScope: null });
                         if (_singletonInstance === null) {
-                            _singletonInstance = createInstance(resolve, isFactory, scoped, args);
+                            _singletonInstance = createInstance(resolve, isFactory, scoped, args, key, statistics);
+                            statistics.created.singletons++;
+                        }
+                        else {
+                            statistics.misses.singletons++;
                         }
                         return _singletonInstance;
                     }
@@ -388,7 +425,7 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
                 return (...dynamicArgArray) => {
                     const scoped = (isScoped ? { owner, keyForScope: key } : { owner, keyForScope: null });
                     const args = argsUnion(staticArgArray, dynamicArgArray);
-                    const result = createInstance(resolve, isFactory, scoped, args);
+                    const result = createInstance(resolve, isFactory, scoped, args, key, statistics);
                     return result;
                 }
             }
@@ -412,6 +449,39 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
     else {
         this._dependencies[key] = newResolver;
     }
+
+    const registered = this._statistics.registered;
+    registered.total++;
+    let keyStatistics = registered.keys[key];
+    if (!keyStatistics) {
+        keyStatistics = { properties: [ ] };
+        registered.keys[key] = keyStatistics;
+    }
+
+    keyStatistics.total = (keyStatistics.total || 0) + 1;
+    if (isInstance) {
+        statistics.registered.instances++;
+        keyStatistics.properties.push('instance');
+        registered.instances = (registered.instances || 0) + 1;
+    }
+    if (isSingleton) {
+        statistics.registered.singletons++;
+        keyStatistics.properties.push('singleton');
+        registered.singletons = (registered.singletons || 0) + 1;
+    }
+    if (isTransient) {
+        keyStatistics.properties.push('transient');
+        registered.transients = (registered.transients || 0) + 1;
+    }
+    if (isScoped) {
+        keyStatistics.properties.push('scoped');
+        registered.scopeds = (registered.scopeds || 0) + 1;
+    }
+    if (isFactory) {
+        keyStatistics.properties.push('factory');
+        registered.factories = (registered.factories || 0) + 1;
+    }
+    keyStatistics.properties = Array.from(new Set(keyStatistics.properties));
 }
 
 function setFactory(flags, key, create, tags, thisArg, ...argArray) {
@@ -423,7 +493,7 @@ function setFactory(flags, key, create, tags, thisArg, ...argArray) {
     setDependency.call(this, key, create, tags, flags, ...argArray);
 }
 
-function createInstance(resolve, isFactory, { owner, keyForScope }, argArray) {
+function createInstance(resolve, isFactory, { owner, keyForScope }, argArray, key, statistics) {
     if (!util.isArray(argArray)) throw new Error('The argument "argArray" is not an array');
     let result = (!util.isNullOrUndefined(keyForScope) ? owner._injection_scope[keyForScope] : undefined);
     if (result === undefined) {
@@ -435,6 +505,13 @@ function createInstance(resolve, isFactory, { owner, keyForScope }, argArray) {
         if (!util.isNullOrUndefined(keyForScope)) {
             owner._injection_scope[keyForScope] = result;
         }
+
+        statistics.created.total++;
+        statistics.created.keys[key] = (statistics.created.keys[key] || 0) + 1;
+    }
+    else {
+        statistics.misses.total++;
+        statistics.misses.keys[key] = (statistics.misses.keys[key] || 0) + 1;
     }
     return result;
 }
