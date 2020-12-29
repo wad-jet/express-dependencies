@@ -15,6 +15,9 @@ class Container {
             registered: {
                 instances: 0,
                 singletons: 0,
+                transients: 0,
+                factories: 0,
+                scopeds: 0,
                 total: 0,
                 keys: { }
             }
@@ -454,7 +457,8 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
         this._dependencies[key] = newResolver;
     }
 
-    const registered = this._statistics.registered;
+    const registered = statistics.registered;
+
     registered.total++;
     let keyStatistics = registered.keys[key];
     if (!keyStatistics) {
@@ -464,26 +468,24 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
 
     keyStatistics.total = (keyStatistics.total || 0) + 1;
     if (isInstance) {
-        statistics.registered.instances++;
+        registered.instances++;
         keyStatistics.properties.push('instance');
-        registered.instances = (registered.instances || 0) + 1;
     }
     if (isSingleton) {
-        statistics.registered.singletons++;
+        registered.singletons++;
         keyStatistics.properties.push('singleton');
-        registered.singletons = (registered.singletons || 0) + 1;
     }
     if (isTransient) {
+        registered.transients++;
         keyStatistics.properties.push('transient');
-        registered.transients = (registered.transients || 0) + 1;
     }
     if (isScoped) {
+        registered.scopeds++;
         keyStatistics.properties.push('scoped');
-        registered.scopeds = (registered.scopeds || 0) + 1;
     }
     if (isFactory) {
+        registered.factories++;
         keyStatistics.properties.push('factory');
-        registered.factories = (registered.factories || 0) + 1;
     }
     keyStatistics.properties = Array.from(new Set(keyStatistics.properties));
 }
