@@ -33,8 +33,10 @@ class Container {
         };
         this._statistics.misses = {
             singletons: 0,
-            total: 0,
-            keys: { }
+            scoped: {
+                total: 0,
+                keys: { }
+            }
         };
     }
 
@@ -516,8 +518,8 @@ function createInstance(resolve, isFactory, { owner, keyForScope }, argArray, ke
         statistics.created.keys[key] = (statistics.created.keys[key] || 0) + 1;
     }
     else {
-        statistics.misses.total++;
-        statistics.misses.keys[key] = (statistics.misses.keys[key] || 0) + 1;
+        statistics.misses.scoped.total++;
+        statistics.misses.scoped.keys[key] = (statistics.misses.keys[key] || 0) + 1;
     }
     return result;
 }
