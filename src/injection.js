@@ -396,6 +396,7 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
     }
 
     const statistics = this._statistics;
+    if (isSingleton && isScoped) throw new Error('Singleton object cannot have a scoped lifestyle');
 
     let resolveFunction;
     if (isInstance) {
@@ -406,9 +407,8 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
                 var _singletonInstance = null;
                 return {
                     get: function(owner, args) {
-                        const scoped = (isScoped ? { owner, keyForScope: key } : { owner, keyForScope: null });
                         if (_singletonInstance === null) {
-                            _singletonInstance = createInstance(resolve, isFactory, scoped, args, key, statistics);
+                            _singletonInstance = createInstance(resolve, isFactory, { owner, keyForScope: null }, args);
                             statistics.created.singletons++;
                         }
                         else {
