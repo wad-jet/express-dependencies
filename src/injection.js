@@ -410,7 +410,7 @@ function setDependency(key, resolve, tags, flags, ...staticArgArray) {
                 return {
                     get: function(owner, args) {
                         if (_singletonInstance === null) {
-                            _singletonInstance = createInstance(resolve, isFactory, { owner, keyForScope: null }, args);
+                            _singletonInstance = createInstance(resolve, isFactory, { owner, keyForScope: null }, args, key, statistics);
                             statistics.created.singletons++;
                         }
                         else {
@@ -505,6 +505,8 @@ function setFactory(flags, key, create, tags, thisArg, ...argArray) {
 
 function createInstance(resolve, isFactory, { owner, keyForScope }, argArray, key, statistics) {
     if (!util.isArray(argArray)) throw new Error('The argument "argArray" is not an array');
+    if (!key) throw new Error('The argument "key" not specified');
+    if (!statistics) throw new Error('The argument "statistics" not specified');
     let result = (!util.isNullOrUndefined(keyForScope) ? owner._injection_scope[keyForScope] : undefined);
     if (result === undefined) {
         if (isFactory === true) {
