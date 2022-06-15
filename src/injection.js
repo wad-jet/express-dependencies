@@ -291,7 +291,7 @@ class Injection {
     getResolver(name) {
         const resolved = { };
         this.injector(resolved, null, () => { });
-        return resolved[name];
+        return resolved[this._container.options.keyNameNormalization(name)];
     }
 
     /**
@@ -301,6 +301,8 @@ class Injection {
      */
     resolve(name, ...args) {
         const resolver = this.getResolver(name);
+        if (!resolver)
+            throw new Error(`Instance named '${name}' not found`);
         return resolver.apply(this, args);
     }
 }
